@@ -68,6 +68,7 @@ class MainActivity : AppCompatActivity() {
             receiveMessageJob.cancelAndJoin()
             sendMessageJob.join()
         }
+        httpClient.close()
     }
 
     private suspend fun listenForIncomingMessages(incoming: ReceiveChannel<Frame>) {
