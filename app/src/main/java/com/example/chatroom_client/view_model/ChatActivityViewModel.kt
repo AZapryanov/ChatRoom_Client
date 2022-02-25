@@ -18,4 +18,8 @@ class ChatActivityViewModel: ViewModel() {
         messageCount.value = messageCount.value?.plus(1)
     }
 
+    fun getMessageCount(): Int {
+        return messageCount.value!!.toInt()
+    }
+
 }

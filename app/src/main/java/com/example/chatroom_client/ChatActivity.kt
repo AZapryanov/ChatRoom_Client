@@ -57,25 +57,18 @@ class ChatActivity : AppCompatActivity() {
         }
 
         viewModel.messageCount.observe(this, {
-            val rvTemplateType = getRVTemplateType()
             val recyclerView = binding.rvMessages
             val rvItems = viewModel.recyclerViewList
-            val rvAdapter = RecyclerViewItemAdapter(rvItems, rvTemplateType)
+            val rvAdapter = RecyclerViewItemAdapter(rvItems)
 
             recyclerView.apply {
                 layoutManager = LinearLayoutManager(this@ChatActivity)
-                recyclerView.adapter = rvAdapter
+                adapter = rvAdapter
+
+                //Always scrolls to the last item after update
+                scrollToPosition(rvAdapter.itemCount -1)
             }
         })
-    }
-
-    private fun getRVTemplateType(): String? {
-        val rvTemplateType: String? = if (viewModel.lastMessage.subSequence(0, 2) == "me") {
-            "me"
-        } else {
-            "others"
-        }
-        return rvTemplateType
     }
 
     private suspend fun runWebSocketClient(httpClient: HttpClient, hostIP: String, port: Int, path: String) {
