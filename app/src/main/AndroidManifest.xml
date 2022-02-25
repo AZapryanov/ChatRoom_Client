@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ChatRoom_Client">
         <activity
+            android:name=".ChatActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
