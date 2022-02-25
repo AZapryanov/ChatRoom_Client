@@ -14,7 +14,7 @@ class RecyclerViewItemAdapter(private val items: MutableList<RecyclerViewItemMod
 ) : RecyclerView.Adapter<RecyclerViewItemAdapter.RvEntryViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RvEntryViewHolder {
         var view: View? = null
-        if (template == "my") {
+        if (template == "me") {
             view = LayoutInflater.from(parent.context).inflate(R.layout.rv_my_messages_template, parent, false)
         } else if (template == "others") {
             view = LayoutInflater.from(parent.context).inflate(R.layout.rv_others_messages_template, parent, false)

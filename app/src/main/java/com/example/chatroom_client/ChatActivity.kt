@@ -3,12 +3,9 @@ package com.example.chatroom_client
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.chatroom_client.adapters.RecyclerViewItemAdapter
 import com.example.chatroom_client.databinding.ActivityChatBinding
-import com.example.chatroom_client.models.RecyclerViewItemModel
 
 import com.example.chatroom_client.view_model.ChatActivityViewModel
 import io.ktor.client.*
@@ -21,7 +18,6 @@ import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.channels.ReceiveChannel
 
 class ChatActivity : AppCompatActivity() {
-
     companion object {
         private const val TAG = "ChatActivity"
         private const val HOST_IP = "192.168.182.37"
@@ -32,14 +28,6 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var binding: ActivityChatBinding
     private lateinit var viewModel: ChatActivityViewModel
     private lateinit var messageToSend: String
-
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var items: MutableList<RecyclerViewItemModel>
-    private lateinit var rvAdapter: RecyclerViewItemAdapter
-
-    private val messageToAddToRecyclerView: MutableLiveData<String> by lazy{
-        MutableLiveData<String>()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,10 +40,6 @@ class ChatActivity : AppCompatActivity() {
 
         viewModel = ChatActivityViewModel()
         messageToSend = ""
-
-//        recyclerView = binding.rvMessages
-        items = mutableListOf(RecyclerViewItemModel("me: Hey"), RecyclerViewItemModel("Alex: yo"), RecyclerViewItemModel("Gogo: wazzup"))
-
 
         val client = HttpClient(CIO) {
             install(WebSockets)
@@ -72,40 +56,26 @@ class ChatActivity : AppCompatActivity() {
             messageToSend = binding.output.text.toString()
         }
 
-        messageToAddToRecyclerView.observe(this, {
-            val template: String? = if (messageToAddToRecyclerView.value.toString().subSequence(0, 2) == "me") {
-                "my"
-            } else {
-                "others"
-            }
-//            items.add(RecyclerViewItemModel(messageToAddToRecyclerView.value))
-////            items.add(RecyclerViewItemModel(messageToAddToRecyclerView.value))
+        viewModel.messageCount.observe(this, {
+            val rvTemplateType = getRVTemplateType()
             val recyclerView = binding.rvMessages
-            val rvItems = items
-            val rvAdapter = RecyclerViewItemAdapter(rvItems, template)
+            val rvItems = viewModel.recyclerViewList
+            val rvAdapter = RecyclerViewItemAdapter(rvItems, rvTemplateType)
+
             recyclerView.apply {
                 layoutManager = LinearLayoutManager(this@ChatActivity)
                 recyclerView.adapter = rvAdapter
             }
-
-//
-//            rvAdapter = RecyclerViewItemAdapter(items, template)
-//
-//            recyclerView.apply {
-//                layoutManager = LinearLayoutManager(this@ChatActivity)
-//                recyclerView.adapter = rvAdapter
-//            }
         })
+    }
 
-        messageToAddToRecyclerView.value = "me: Hey"
-//
-        messageToAddToRecyclerView.value = "Alex: yo"
-//
-//        messageToAddToRecyclerView.value = "Gogo: wazzup"
-//
-//        messageToAddToRecyclerView.value = "me: fff"
-//
-//        messageToAddToRecyclerView.value = "me: eee"
+    private fun getRVTemplateType(): String? {
+        val rvTemplateType: String? = if (viewModel.lastMessage.subSequence(0, 2) == "me") {
+            "me"
+        } else {
+            "others"
+        }
+        return rvTemplateType
     }
 
     private suspend fun runWebSocketClient(httpClient: HttpClient, hostIP: String, port: Int, path: String) {
@@ -119,13 +89,13 @@ class ChatActivity : AppCompatActivity() {
                 sendMessage()
             }
             val receiveMessageJob = launch { listenForIncomingMessages(incoming) }
-
             receiveMessageJob.cancelAndJoin()
             sendMessageJob.join()
         }
         httpClient.close()
     }
 
+    @DelicateCoroutinesApi
     private suspend fun listenForIncomingMessages(incoming: ReceiveChannel<Frame>) {
         while(true) {
             try {
@@ -133,8 +103,7 @@ class ChatActivity : AppCompatActivity() {
                 when (frame) {
                     is Frame.Text -> {
                         GlobalScope.launch(Dispatchers.Main) {
-                            items.add(RecyclerViewItemModel(frame.readText()))
-                            messageToAddToRecyclerView.value = frame.readText()
+                            viewModel.addItemToList(frame.readText())
                         }
                         Log.d(TAG, "message received: ${frame.readText()}")
                     }
