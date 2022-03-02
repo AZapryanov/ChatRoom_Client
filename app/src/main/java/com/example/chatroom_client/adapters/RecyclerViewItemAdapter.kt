@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.chatroom_client.R
 import com.example.chatroom_client.models.RecyclerViewItemModel
 
-
 class RecyclerViewItemAdapter(private val items: MutableList<RecyclerViewItemModel>
 ) : RecyclerView.Adapter<RecyclerViewItemAdapter.RvEntryViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RvEntryViewHolder {

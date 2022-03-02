@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chatroom_client.adapters.RecyclerViewItemAdapter
 import com.example.chatroom_client.databinding.ActivityChatBinding
-
 import com.example.chatroom_client.view_model.ChatActivityViewModel
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*

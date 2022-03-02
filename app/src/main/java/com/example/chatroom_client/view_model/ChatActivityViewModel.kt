@@ -17,9 +17,4 @@ class ChatActivityViewModel: ViewModel() {
         lastMessage = item
         messageCount.value = messageCount.value?.plus(1)
     }
-
-    fun getMessageCount(): Int {
-        return messageCount.value!!.toInt()
-    }
-
 }
