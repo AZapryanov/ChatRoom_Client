@@ -87,14 +87,13 @@ class ChatActivity : AppCompatActivity() {
         httpClient.close()
     }
 
-    @DelicateCoroutinesApi
     private suspend fun listenForIncomingMessages(incoming: ReceiveChannel<Frame>) {
         while(true) {
             try {
                 val frame = incoming.receive()
                 when (frame) {
                     is Frame.Text -> {
-                        GlobalScope.launch(Dispatchers.Main) {
+                        CoroutineScope(Dispatchers.Main).launch {
                             viewModel.addItemToList(frame.readText())
                         }
                         Log.d(TAG, "message received: ${frame.readText()}")
