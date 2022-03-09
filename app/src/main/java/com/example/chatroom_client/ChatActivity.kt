@@ -19,7 +19,7 @@ import kotlinx.coroutines.channels.ReceiveChannel
 class ChatActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "ChatActivity"
-        private const val HOST_IP = "192.168.182.37"
+        private const val HOST_IP = "192.168.182.174"
         private const val PORT = 8080
         private const val PATH = "/chat"
     }
