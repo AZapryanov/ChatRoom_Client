@@ -77,9 +77,8 @@ class ChatActivity : AppCompatActivity() {
             port = port, path = path
         ) {
             Log.d(TAG, "Sucessfully connected!")
-            val sendMessageJob = launch {
-                sendMessage()
-            }
+
+            val sendMessageJob = launch { sendMessage() }
             val receiveMessageJob = launch { listenForIncomingMessages(incoming) }
             receiveMessageJob.cancelAndJoin()
             sendMessageJob.join()
