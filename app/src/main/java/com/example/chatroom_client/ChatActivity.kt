@@ -54,6 +54,7 @@ class ChatActivity : AppCompatActivity() {
 
         binding.buttonSendMessage.setOnClickListener {
             messageToSend = binding.output.text.toString()
+            binding.output.text.clear()
         }
 
         viewModel.messageCount.observe(this, {
