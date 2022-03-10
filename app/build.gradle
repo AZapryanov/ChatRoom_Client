@@ -42,11 +42,6 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-
-    apollo {
-        useSchemaPackageNameForFragments.set(true)
-        packageName.set("com.example.chatroom_client.graphql.generated")
-    }
 }
 
 dependencies {
@@ -60,7 +55,7 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
-    implementation 'com.squareup.okhttp3:okhttp:3.14.7'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
 
 //Ktor dependencies
     def ktor_version = '1.6.7'
@@ -91,4 +86,8 @@ dependencies {
     implementation("com.apollographql.apollo3:apollo-runtime:3.1.0")
 
 
+}
+
+apollo {
+    packageName.set("src.main.graphql")
 }

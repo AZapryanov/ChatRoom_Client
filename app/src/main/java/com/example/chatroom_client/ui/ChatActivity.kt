@@ -1,10 +1,11 @@
-package com.example.chatroom_client
+package com.example.chatroom_client.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chatroom_client.adapters.RecyclerViewItemAdapter
+import com.example.chatroom_client.data.graphql.apolloClient
 import com.example.chatroom_client.databinding.ActivityChatBinding
 import com.example.chatroom_client.view_model.ChatActivityViewModel
 import io.ktor.client.*
@@ -15,11 +16,12 @@ import io.ktor.http.cio.websocket.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.channels.ReceiveChannel
+import src.main.graphql.MessageListQuery
 
 class ChatActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "ChatActivity"
-        private const val HOST_IP = "192.168.182.174"
+        private const val HOST_IP = "192.168.182.37"
         private const val PORT = 8080
         private const val PATH = "/chat"
     }
