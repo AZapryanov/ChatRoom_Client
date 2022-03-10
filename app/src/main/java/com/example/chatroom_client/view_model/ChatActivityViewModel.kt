@@ -12,9 +12,9 @@ class ChatActivityViewModel: ViewModel() {
         MutableLiveData<Int>()
     }
 
-    fun addItemToList(item: String) {
-        recyclerViewList.add(RecyclerViewItemModel(item))
-        lastMessage = item
+    fun addItemToList(name: String, content: String) {
+        recyclerViewList.add(RecyclerViewItemModel(name, content))
+        lastMessage = "[$name]: $content"
         messageCount.value = messageCount.value?.plus(1)
     }
 }

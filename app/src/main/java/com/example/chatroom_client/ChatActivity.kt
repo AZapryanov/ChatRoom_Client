@@ -84,7 +84,11 @@ class ChatActivity : AppCompatActivity() {
                 when (val frame = incoming.receive()) {
                     is Frame.Text -> {
                         CoroutineScope(Dispatchers.Main).launch {
-                            viewModel.addItemToList(frame.readText())
+                            val message = frame.readText()
+                            val name = message.substring(0, message.indexOf(':'))
+                            val content = message.substring(name.length+2, message.length)
+                            Log.d(TAG, "listenForIncomingMessages: message: $message\nname: $name\ncontent: $content")
+                            viewModel.addItemToList(name, content)
                         }
                         Log.d(TAG, "message received: ${frame.readText()}")
                     }
@@ -94,9 +98,9 @@ class ChatActivity : AppCompatActivity() {
                     }
                 }
             } catch (e: ClosedReceiveChannelException) {
-                Log.w(TAG, "Failure: ${e.message}")
+                //Log.w(TAG, "Failure: ${e.message}")
             } catch (e: Exception) {
-                Log.w(TAG, "Failure: ${e.message}")
+                //Log.w(TAG, "Failure: ${e.message}")
             }
         }
     }

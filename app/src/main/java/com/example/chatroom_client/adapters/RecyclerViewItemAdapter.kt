@@ -1,5 +1,6 @@
 package com.example.chatroom_client.adapters
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,7 +22,7 @@ class RecyclerViewItemAdapter(private val items: MutableList<RecyclerViewItemMod
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (items[position].body?.subSequence(0, 2) == "me") {
+        return if (items[position].name == "me") {
             0
         } else {
             1
@@ -38,8 +39,10 @@ class RecyclerViewItemAdapter(private val items: MutableList<RecyclerViewItemMod
 
     class RvEntryViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView!!) {
         fun bindView(item: RecyclerViewItemModel) {
-            val rvEntryBody = itemView.findViewById<TextView>(R.id.tvEntryBody)
-            rvEntryBody.text = item.body
+            val rvEntryName = itemView.findViewById<TextView>(R.id.tvEntryName)
+            val rvEntryContent = itemView.findViewById<TextView>(R.id.tvEntryContent)
+            rvEntryName.text = item.name
+            rvEntryContent.text = item.content
         }
     }
 }
