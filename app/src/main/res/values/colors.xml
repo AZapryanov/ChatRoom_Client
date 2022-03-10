@@ -10,4 +10,6 @@
     <color name="green_sea">#CC2e8b55</color>
     <color name="blue_celestial">#FF48a0c9</color>
     <color name="black_transparent">#CC000000</color>
+    <color name="blue_plain">#FF00B4D8</color>
+    <color name="blue_dark">#FF03045E</color>
 </resources>
