@@ -81,8 +81,7 @@ class ChatActivity : AppCompatActivity() {
     private suspend fun listenForIncomingMessages(incoming: ReceiveChannel<Frame>) {
         while(true) {
             try {
-                val frame = incoming.receive()
-                when (frame) {
+                when (val frame = incoming.receive()) {
                     is Frame.Text -> {
                         CoroutineScope(Dispatchers.Main).launch {
                             viewModel.addItemToList(frame.readText())
@@ -90,6 +89,9 @@ class ChatActivity : AppCompatActivity() {
                         Log.d(TAG, "message received: ${frame.readText()}")
                     }
                     is Frame.Binary -> println(frame.readBytes())
+                    else -> {
+                        // Da spre da mrunka toq compiler
+                    }
                 }
             } catch (e: ClosedReceiveChannelException) {
                 Log.w(TAG, "Failure: ${e.message}")
