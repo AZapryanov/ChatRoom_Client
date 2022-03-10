@@ -19,14 +19,15 @@ import kotlinx.coroutines.channels.ReceiveChannel
 class ChatActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "ChatActivity"
-        private const val HOST_IP = "192.168.182.37"
+        private const val HOST_IP = "192.168.182.174"
         private const val PORT = 8080
         private const val PATH = "/chat"
     }
 
     private lateinit var binding: ActivityChatBinding
     private lateinit var viewModel: ChatActivityViewModel
-    private lateinit var messageToSend: String
+    private lateinit var rvAdapter: RecyclerViewItemAdapter
+    private var messageToSend = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +39,7 @@ class ChatActivity : AppCompatActivity() {
         actionbar!!.title = "Chatroom"
 
         viewModel = ChatActivityViewModel()
-        messageToSend = ""
+        initRecyclerView()
 
         val client = HttpClient(CIO) {
             install(WebSockets)
@@ -56,17 +57,8 @@ class ChatActivity : AppCompatActivity() {
         }
 
         viewModel.messageCount.observe(this, {
-            val recyclerView = binding.rvMessages
-            val rvItems = viewModel.recyclerViewList
-            val rvAdapter = RecyclerViewItemAdapter(rvItems)
-
-            recyclerView.apply {
-                layoutManager = LinearLayoutManager(this@ChatActivity)
-                adapter = rvAdapter
-
-                //Always scrolls to the last item after update
-                scrollToPosition(rvAdapter.itemCount -1)
-            }
+            rvAdapter.notifyItemInserted(viewModel.recyclerViewList.size - 1)
+            binding.rvMessages.scrollToPosition(rvAdapter.itemCount-1)
         })
     }
 
@@ -113,6 +105,15 @@ class ChatActivity : AppCompatActivity() {
                 send(Frame.Text(messageToSend))
                 messageToSend = ""
             }
+        }
+    }
+
+    private fun initRecyclerView(){
+        val recyclerView = binding.rvMessages
+        rvAdapter = RecyclerViewItemAdapter(viewModel.recyclerViewList)
+        recyclerView.apply {
+            layoutManager = LinearLayoutManager(this@ChatActivity)
+            adapter = rvAdapter
         }
     }
 }
