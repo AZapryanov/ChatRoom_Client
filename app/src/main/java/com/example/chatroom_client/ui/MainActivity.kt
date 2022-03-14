@@ -32,11 +32,11 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             val response = apolloClient.query(MessageListQuery()).execute()
             val getAllMessageList = response.data?.getAllMessages
-            val messageAsData = getAllMessageList?.get(0)
-            val message = messageAsData?.message
+//            val messageAsData = getAllMessageList?.get(0)
+//            val message = messageAsData?.message
             Log.d("MessageList", "Success ${response.data}")
-            Log.d("MessageList", "Message as data: $messageAsData")
-            Log.d("MessageList", "Only message text: $message")
+//            Log.d("MessageList", "Message as data: $messageAsData")
+//            Log.d("MessageList", "Only message text: $message")
 
             if (getAllMessageList != null) {
                 for (message in getAllMessageList) {
