@@ -5,11 +5,9 @@
       <map>
         <entry key="..\:/Users/Aleksandar Zapryanov/Desktop/Demo_Projects/ChatRoom_Client/app/src/main/res/layout/activity_chat.xml" value="0.25" />
         <entry key="..\:/Users/Aleksandar Zapryanov/Desktop/Demo_Projects/ChatRoom_Client/app/src/main/res/layout/activity_main.xml" value="0.2957427536231884" />
-        <entry key="..\:/Users/Aleksandar Zapryanov/Desktop/Demo_Projects/ChatRoom_Client/app/src/main/res/layout/rv_my_messages_template.xml" value="0.22447916666666667" />
+        <entry key="..\:/Users/Aleksandar Zapryanov/Desktop/Demo_Projects/ChatRoom_Client/app/src/main/res/layout/rv_my_messages_template.xml" value="0.5" />
         <entry key="..\:/Users/Aleksandar Zapryanov/Desktop/Demo_Projects/ChatRoom_Client/app/src/main/res/layout/rv_others_messages_template.xml" value="0.22447916666666667" />
-        <entry key="..\:/Users/Kristiyan Sergilov/AndroidStudioProjects/ChatRoom_Client/app/src/main/res/drawable/rounded_corners.xml" value="0.23020833333333332" />
-        <entry key="..\:/Users/Kristiyan Sergilov/AndroidStudioProjects/ChatRoom_Client/app/src/main/res/drawable/rounded_corners_black.xml" value="0.3828125" />
-        <entry key="..\:/Users/Kristiyan Sergilov/AndroidStudioProjects/ChatRoom_Client/app/src/main/res/drawable/rounded_corners_blue.xml" value="0.3828125" />
+        <entry key="..\:/Users/Aleksandar Zapryanov/Desktop/Demo_Projects/ChatRoom_Client/app/src/main/res/xml/network_security_config.xml" value="0.21041666666666667" />
         <entry key="..\:/Users/Kristiyan Sergilov/AndroidStudioProjects/ChatRoom_Client/app/src/main/res/layout/rv_my_messages_template.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/Kristiyan Sergilov/AndroidStudioProjects/ChatRoom_Client/app/src/main/res/layout/rv_others_messages_template.xml" value="0.36666666666666664" />
       </map>

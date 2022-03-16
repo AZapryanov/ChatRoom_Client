@@ -29,21 +29,21 @@ class MainActivity : AppCompatActivity() {
         actionbar!!.title = "Chat Application"
 
         //Test GraphQL------------------------------------------------------
-        CoroutineScope(Dispatchers.IO).launch {
-            val response = apolloClient.query(MessageListQuery()).execute()
-            val getAllMessageList = response.data?.getAllMessages
+//        CoroutineScope(Dispatchers.IO).launch {
+//            val response = apolloClient.query(MessageListQuery()).execute()
+//            val getAllMessageList = response.data?.getAllMessages
 //            val messageAsData = getAllMessageList?.get(0)
 //            val message = messageAsData?.message
-            Log.d("MessageList", "Success ${response.data}")
+//            Log.d("MessageList", "Success ${response.data}")
 //            Log.d("MessageList", "Message as data: $messageAsData")
 //            Log.d("MessageList", "Only message text: $message")
-
-            if (getAllMessageList != null) {
-                for (message in getAllMessageList) {
-                    Log.d("MessageList", message.message)
-                }
-            }
-        }
+//
+//            if (getAllMessageList != null) {
+//                for (message in getAllMessageList) {
+//                    Log.d("MessageList", message.message)
+//                }
+//            }
+//        }
 //        ------------------------------------------------------------------
 
         binding.buttonJoinChatroom.setOnClickListener {

@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chatroom_client.adapters.RecyclerViewItemAdapter
 import com.example.chatroom_client.data.graphql.apolloClient
 import com.example.chatroom_client.databinding.ActivityChatBinding
+import com.example.chatroom_client.models.RecyclerViewItemModel
 import com.example.chatroom_client.view_model.ChatActivityViewModel
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
@@ -16,12 +17,13 @@ import io.ktor.http.cio.websocket.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.channels.ReceiveChannel
+import okhttp3.internal.notify
 import src.main.graphql.MessageListQuery
 
 class ChatActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "ChatActivity"
-        private const val HOST_IP = "192.168.182.174"
+        private const val HOST_IP = "192.168.182.37"
         private const val PORT = 8080
         private const val PATH = "/chat"
     }
@@ -41,7 +43,23 @@ class ChatActivity : AppCompatActivity() {
         actionbar!!.title = "Chatroom"
 
         viewModel = ChatActivityViewModel()
+        val username = intent.getStringExtra("username")
+
+        runBlocking {
+            val response = apolloClient.query(MessageListQuery()).execute()
+            val rawMessages = response.data?.getAllMessages
+            Log.d("RawMEssage", "$rawMessages")
+
+            if (rawMessages != null && rawMessages.isNotEmpty()) {
+                val listOfMessages = mapToRecyclerViewFormat(rawMessages, username)
+                viewModel.addEntireList(listOfMessages)
+                viewModel.increaseCountByListLength(listOfMessages.size)
+                Log.d("MessageList", "View model list: ${viewModel.recyclerViewList}")
+            }
+        }
+
         initRecyclerView()
+        messageToSend = "%: $username"
 
         val client = HttpClient(CIO) {
             install(WebSockets)
@@ -51,9 +69,6 @@ class ChatActivity : AppCompatActivity() {
             runWebSocketClient(client, HOST_IP, PORT, PATH)
         }
 
-        val username = intent.getStringExtra("username")
-        messageToSend = "%: $username"
-
         binding.buttonSendMessage.setOnClickListener {
             messageToSend = binding.output.text.toString()
             binding.output.text.clear()
@@ -61,11 +76,17 @@ class ChatActivity : AppCompatActivity() {
 
         viewModel.messageCount.observe(this, {
             rvAdapter.notifyItemInserted(viewModel.recyclerViewList.size - 1)
-            binding.rvMessages.scrollToPosition(rvAdapter.itemCount-1)
+            Log.d("MessageList", "View model list: ${viewModel.recyclerViewList}")
+            binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
         })
     }
 
-    private suspend fun runWebSocketClient(httpClient: HttpClient, hostIP: String, port: Int, path: String) {
+    private suspend fun runWebSocketClient(
+        httpClient: HttpClient,
+        hostIP: String,
+        port: Int,
+        path: String
+    ) {
         httpClient.ws(
             method = HttpMethod.Get,
             host = hostIP,
@@ -82,15 +103,18 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private suspend fun listenForIncomingMessages(incoming: ReceiveChannel<Frame>) {
-        while(true) {
+        while (true) {
             try {
                 when (val frame = incoming.receive()) {
                     is Frame.Text -> {
                         CoroutineScope(Dispatchers.Main).launch {
                             val message = frame.readText()
                             val name = message.substring(0, message.indexOf(':'))
-                            val content = message.substring(name.length+2, message.length)
-                            Log.d(TAG, "listenForIncomingMessages: message: $message\nname: $name\ncontent: $content")
+                            val content = message.substring(name.length + 2, message.length)
+                            Log.d(
+                                TAG,
+                                "listenForIncomingMessages: message: $message\nname: $name\ncontent: $content"
+                            )
                             viewModel.addItemToList(name, content)
                         }
                         Log.d(TAG, "message received: ${frame.readText()}")
@@ -109,7 +133,7 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private suspend fun WebSocketSession.sendMessage() {
-        while(true) {
+        while (true) {
             if (messageToSend.isNotEmpty()) {
                 send(Frame.Text(messageToSend))
                 messageToSend = ""
@@ -117,12 +141,28 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
-    private fun initRecyclerView(){
+    private fun initRecyclerView() {
         val recyclerView = binding.rvMessages
         rvAdapter = RecyclerViewItemAdapter(viewModel.recyclerViewList)
         recyclerView.apply {
             layoutManager = LinearLayoutManager(this@ChatActivity)
             adapter = rvAdapter
         }
+    }
+
+    private fun mapToRecyclerViewFormat(
+        rawMessages: List<MessageListQuery.GetAllMessage>?,
+        username: String?
+    ): MutableList<RecyclerViewItemModel> {
+        val messagesListInRVFormat = rawMessages?.map {
+
+            var name = it.message.substring(1, it.message.indexOf(']'))
+            val content = it.message.substring(name.length + 4, it.message.length)
+            if (username == name.substring(0, name.length)) {
+                name = "me"
+            }
+            RecyclerViewItemModel(name = name, content = content)
+        } as MutableList<RecyclerViewItemModel>
+        return messagesListInRVFormat
     }
 }
