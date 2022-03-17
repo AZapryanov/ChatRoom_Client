@@ -19,9 +19,10 @@ class ChatActivityViewModel: ViewModel() {
 
     suspend fun addEntireList(list: MutableList<RecyclerViewItemModel>) {
         recyclerViewList = list
+        increaseCountByListLength(list.size)
     }
 
-    fun increaseCountByListLength(listLength: Int) {
-        messageCount.value = listLength
+    suspend fun increaseCountByListLength(listLength: Int) {
+        messageCount.value = messageCount.value?.plus(listLength)
     }
 }

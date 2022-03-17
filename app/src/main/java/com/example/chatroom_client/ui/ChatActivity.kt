@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.chatroom_client.adapters.RecyclerViewItemAdapter
 import com.example.chatroom_client.data.graphql.apolloClient
 import com.example.chatroom_client.databinding.ActivityChatBinding
@@ -31,6 +32,7 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var binding: ActivityChatBinding
     private lateinit var viewModel: ChatActivityViewModel
     private lateinit var rvAdapter: RecyclerViewItemAdapter
+    private lateinit var recyclerView: RecyclerView
     private var messageToSend = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,22 +46,6 @@ class ChatActivity : AppCompatActivity() {
 
         viewModel = ChatActivityViewModel()
         val username = intent.getStringExtra("username")
-
-        runBlocking {
-            val response = apolloClient.query(MessageListQuery()).execute()
-            val rawMessages = response.data?.getAllMessages
-            Log.d("RawMEssage", "$rawMessages")
-
-            if (rawMessages != null && rawMessages.isNotEmpty()) {
-                val listOfMessages = mapToRecyclerViewFormat(rawMessages, username)
-                viewModel.addEntireList(listOfMessages)
-                viewModel.increaseCountByListLength(listOfMessages.size)
-                Log.d("MessageList", "View model list: ${viewModel.recyclerViewList}")
-            }
-        }
-
-        initRecyclerView()
-        messageToSend = "%: $username"
 
         val client = HttpClient(CIO) {
             install(WebSockets)
@@ -79,6 +65,20 @@ class ChatActivity : AppCompatActivity() {
             Log.d("MessageList", "View model list: ${viewModel.recyclerViewList}")
             binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
         })
+        initRecyclerView()
+        messageToSend = "%: $username"
+
+        runBlocking {
+            val response = apolloClient.query(MessageListQuery()).execute()
+            val rawMessages = response.data?.getAllMessages
+            Log.d("RawMessages", "$rawMessages")
+
+            if (rawMessages != null && rawMessages.isNotEmpty()) {
+                val listOfMessages = mapToRecyclerViewFormat(rawMessages, username)
+                viewModel.addEntireList(listOfMessages)
+                Log.d("MessageList", "View model list: ${viewModel.recyclerViewList}")
+            }
+        }
     }
 
     private suspend fun runWebSocketClient(
@@ -142,7 +142,7 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun initRecyclerView() {
-        val recyclerView = binding.rvMessages
+        recyclerView = binding.rvMessages
         rvAdapter = RecyclerViewItemAdapter(viewModel.recyclerViewList)
         recyclerView.apply {
             layoutManager = LinearLayoutManager(this@ChatActivity)
@@ -150,7 +150,7 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
-    private fun mapToRecyclerViewFormat(
+    private suspend fun mapToRecyclerViewFormat(
         rawMessages: List<MessageListQuery.GetAllMessage>?,
         username: String?
     ): MutableList<RecyclerViewItemModel> {
