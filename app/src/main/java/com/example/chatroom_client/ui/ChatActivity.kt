@@ -23,7 +23,7 @@ import src.main.graphql.MessageListQuery
 
 class ChatActivity : AppCompatActivity() {
     companion object {
-        private const val TAG = "ChatActivity"
+        const val TAG = "ChatActivity"
         private const val HOST_IP = "192.168.182.37"
         private const val PORT = 8080
         private const val PATH = "/chat"
@@ -47,12 +47,26 @@ class ChatActivity : AppCompatActivity() {
         viewModel = ChatActivityViewModel()
         val username = intent.getStringExtra("username")
 
-        val client = HttpClient(CIO) {
-            install(WebSockets)
+        runBlocking {
+            val client = HttpClient(CIO) {
+                install(WebSockets)
+            }
+
+            CoroutineScope(Dispatchers.IO).launch {
+                runWebSocketClient(client, HOST_IP, PORT, PATH)
+            }
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            runWebSocketClient(client, HOST_IP, PORT, PATH)
+        runBlocking {
+            val response = apolloClient.query(MessageListQuery()).execute()
+            val rawMessages = response.data?.getAllMessages
+            Log.d(TAG, "$rawMessages")
+
+            if (rawMessages != null && rawMessages.isNotEmpty()) {
+                val listOfMessages = mapToRecyclerViewFormat(rawMessages, username)
+                viewModel.addEntireList(listOfMessages)
+                Log.d(TAG, "View model list: ${viewModel.recyclerViewList}")
+            }
         }
 
         binding.buttonSendMessage.setOnClickListener {
@@ -62,23 +76,12 @@ class ChatActivity : AppCompatActivity() {
 
         viewModel.messageCount.observe(this, {
             rvAdapter.notifyItemInserted(viewModel.recyclerViewList.size - 1)
-            Log.d("MessageList", "View model list: ${viewModel.recyclerViewList}")
+            Log.d(TAG, "View model list: ${viewModel.recyclerViewList}")
             binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
         })
+
         initRecyclerView()
         messageToSend = "%: $username"
-
-        runBlocking {
-            val response = apolloClient.query(MessageListQuery()).execute()
-            val rawMessages = response.data?.getAllMessages
-            Log.d("RawMessages", "$rawMessages")
-
-            if (rawMessages != null && rawMessages.isNotEmpty()) {
-                val listOfMessages = mapToRecyclerViewFormat(rawMessages, username)
-                viewModel.addEntireList(listOfMessages)
-                Log.d("MessageList", "View model list: ${viewModel.recyclerViewList}")
-            }
-        }
     }
 
     private suspend fun runWebSocketClient(
@@ -96,13 +99,14 @@ class ChatActivity : AppCompatActivity() {
 
             val sendMessageJob = launch { sendMessage() }
             val receiveMessageJob = launch { listenForIncomingMessages(incoming) }
-            receiveMessageJob.cancelAndJoin()
+            receiveMessageJob.join()
             sendMessageJob.join()
         }
         httpClient.close()
     }
 
     private suspend fun listenForIncomingMessages(incoming: ReceiveChannel<Frame>) {
+        Log.d(TAG, "Listening for incoming messages")
         while (true) {
             try {
                 when (val frame = incoming.receive()) {
@@ -113,15 +117,11 @@ class ChatActivity : AppCompatActivity() {
                             val content = message.substring(name.length + 2, message.length)
                             Log.d(
                                 TAG,
-                                "listenForIncomingMessages: message: $message\nname: $name\ncontent: $content"
+                                "Message received -> message: $message\nname: $name\ncontent: $content"
                             )
                             viewModel.addItemToList(name, content)
                         }
                         Log.d(TAG, "message received: ${frame.readText()}")
-                    }
-                    is Frame.Binary -> println(frame.readBytes())
-                    else -> {
-                        // Da spre da mrunka toq compiler
                     }
                 }
             } catch (e: ClosedReceiveChannelException) {
@@ -136,6 +136,7 @@ class ChatActivity : AppCompatActivity() {
         while (true) {
             if (messageToSend.isNotEmpty()) {
                 send(Frame.Text(messageToSend))
+                Log.d(TAG, "Message sent: $messageToSend")
                 messageToSend = ""
             }
         }
@@ -148,6 +149,7 @@ class ChatActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@ChatActivity)
             adapter = rvAdapter
         }
+        Log.d(TAG, "Recycler view initialized")
     }
 
     private suspend fun mapToRecyclerViewFormat(
@@ -163,6 +165,7 @@ class ChatActivity : AppCompatActivity() {
             }
             RecyclerViewItemModel(name = name, content = content)
         } as MutableList<RecyclerViewItemModel>
+        Log.d(TAG, "Mapped to RV format")
         return messagesListInRVFormat
     }
 }
