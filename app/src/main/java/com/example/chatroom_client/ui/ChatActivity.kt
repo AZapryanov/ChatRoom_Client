@@ -1,5 +1,6 @@
 package com.example.chatroom_client.ui
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -18,7 +19,6 @@ import io.ktor.http.cio.websocket.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.channels.ReceiveChannel
-import okhttp3.internal.notify
 import src.main.graphql.MessageListQuery
 
 class ChatActivity : AppCompatActivity() {
@@ -33,6 +33,11 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var viewModel: ChatActivityViewModel
     private lateinit var rvAdapter: RecyclerViewItemAdapter
     private lateinit var recyclerView: RecyclerView
+    private var client: HttpClient? = null
+
+    var userId: Int? = null
+    var username: String? = null
+
     private var messageToSend = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,27 +50,27 @@ class ChatActivity : AppCompatActivity() {
         actionbar!!.title = "Chatroom"
 
         viewModel = ChatActivityViewModel()
-        val username = intent.getStringExtra("username")
+        username = intent.getStringExtra("username")
 
         runBlocking {
-            val client = HttpClient(CIO) {
+            client = HttpClient(CIO) {
                 install(WebSockets)
             }
 
             CoroutineScope(Dispatchers.IO).launch {
-                runWebSocketClient(client, HOST_IP, PORT, PATH)
+                runWebSocketClient(client!!, HOST_IP, PORT, PATH)
             }
         }
 
         runBlocking {
             val response = apolloClient.query(MessageListQuery()).execute()
             val rawMessages = response.data?.getAllMessages
-            Log.d(TAG, "$rawMessages")
+//            Log.d(TAG, "$rawMessages")
 
             if (rawMessages != null && rawMessages.isNotEmpty()) {
                 val listOfMessages = mapToRecyclerViewFormat(rawMessages, username)
                 viewModel.addEntireList(listOfMessages)
-                Log.d(TAG, "View model list: ${viewModel.recyclerViewList}")
+//                Log.d(TAG, "View model list: ${viewModel.recyclerViewList}")
             }
         }
 
@@ -74,9 +79,17 @@ class ChatActivity : AppCompatActivity() {
             binding.output.text.clear()
         }
 
+        binding.buttonSeeMyMessageHistory.setOnClickListener {
+            client?.cancel()
+            val intent = Intent(this, UserMessageHistoryActivity::class.java)
+            intent.putExtra("username", username)
+            intent.putExtra("userId", userId)
+            startActivity(intent)
+        }
+
         viewModel.messageCount.observe(this, {
             rvAdapter.notifyItemInserted(viewModel.recyclerViewList.size - 1)
-            Log.d(TAG, "View model list: ${viewModel.recyclerViewList}")
+//            Log.d(TAG, "View model list: ${viewModel.recyclerViewList}")
             binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
         })
 
@@ -113,13 +126,17 @@ class ChatActivity : AppCompatActivity() {
                     is Frame.Text -> {
                         CoroutineScope(Dispatchers.Main).launch {
                             val message = frame.readText()
-                            val name = message.substring(0, message.indexOf(':'))
-                            val content = message.substring(name.length + 2, message.length)
-                            Log.d(
-                                TAG,
-                                "Message received -> message: $message\nname: $name\ncontent: $content"
-                            )
-                            viewModel.addItemToList(name, content)
+                            if (message.startsWith("%")) {
+                                userId = message.subSequence(2, message.length).toString().toInt()
+                            } else {
+                                val name = message.substring(0, message.indexOf(':'))
+                                val content = message.substring(name.length + 2, message.length)
+                                Log.d(
+                                    TAG,
+                                    "Message received -> message: $message\nname: $name\ncontent: $content"
+                                )
+                                viewModel.addItemToList(name, content)
+                            }
                         }
                         Log.d(TAG, "message received: ${frame.readText()}")
                     }

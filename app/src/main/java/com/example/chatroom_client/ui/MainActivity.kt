@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(contentView)
 
         val actionbar = supportActionBar
-        actionbar!!.title = "Chat Application"
+        actionbar!!.title = "User registration"
 
         //Test GraphQL------------------------------------------------------
 //        CoroutineScope(Dispatchers.IO).launch {
