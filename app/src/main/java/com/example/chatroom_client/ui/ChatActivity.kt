@@ -24,7 +24,7 @@ import src.main.graphql.MessageListQuery
 class ChatActivity : AppCompatActivity() {
     companion object {
         const val TAG = "ChatActivity"
-        private const val HOST_IP = "192.168.182.37"
+        private const val HOST_IP = "192.168.182.174"
         private const val PORT = 8080
         private const val PATH = "/chat"
     }
@@ -74,11 +74,11 @@ class ChatActivity : AppCompatActivity() {
             binding.output.text.clear()
         }
 
-        viewModel.messageCount.observe(this, {
+        viewModel.messageCount.observe(this) {
             rvAdapter.notifyItemInserted(viewModel.recyclerViewList.size - 1)
             Log.d(TAG, "View model list: ${viewModel.recyclerViewList}")
             binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
-        })
+        }
 
         initRecyclerView()
         messageToSend = "%: $username"
