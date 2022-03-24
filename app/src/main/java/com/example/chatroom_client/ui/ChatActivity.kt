@@ -22,6 +22,7 @@ import src.main.graphql.MessageListQuery
 class ChatActivity : AppCompatActivity() {
     companion object {
         const val TAG = "ChatActivity"
+        const val OBSERVER_LOCK = "^&$#"
     }
 
     private lateinit var binding: ActivityChatBinding
@@ -87,7 +88,9 @@ class ChatActivity : AppCompatActivity() {
         })
 
         WebsocketService.receivedRecyclerViewItem.observe(this, {
-            viewModel.addItemToList(WebsocketService.receivedRecyclerViewItem.value!!)
+            if (WebsocketService.receivedRecyclerViewItem.value!!.name != OBSERVER_LOCK) {
+                viewModel.addItemToList(WebsocketService.receivedRecyclerViewItem.value!!)
+            }
         })
 
         initRecyclerView()

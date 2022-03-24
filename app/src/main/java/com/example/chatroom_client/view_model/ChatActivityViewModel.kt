@@ -37,7 +37,7 @@ class ChatActivityViewModel: ViewModel() {
     ): MutableList<RecyclerViewItemModel> {
         val messagesListInRVFormat = rawMessages?.map {
             var name = it.message.substring(0, it.message.indexOf(':'))
-            val content = it.message.substring(name.length + 4, it.message.length)
+            val content = it.message.substring(name.length + 2, it.message.length)
             if ("[$username]" == name.substring(0, name.length)) {
                 name = "me"
             }
