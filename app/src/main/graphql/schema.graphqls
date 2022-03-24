@@ -1,14 +1,13 @@
 # User object with the attributes username and identifier
 type User {
-  id: Int!
+  uid: String!
   username: String!
 }
 
 # Message object with the attributes message and identifier
 type Message {
-  id: Int!
   message: String!
-  user_id: Int!
+  uid: String!
 }
 
 # The input of the user without the identifier
@@ -19,7 +18,6 @@ input UserInput {
 # The input of the message without the identifier
 input MessageInput {
   message: String!
-  user_id: Int!
 }
 
 # The Short scalar type represents a signed 16-bit numeric non-fractional value
@@ -30,17 +28,14 @@ scalar Long
 
 # Query object
 type Query {
-  # Retrieve a user by username
-  getUserByUsername(username: String!): User
+  # Retrieve a user by uid
+  getUserByUid(uid: String!): User
 
   # Retrieve all users
   getAllUsers: [User!]!
 
   # Retrieve all messages
   getAllMessages: [Message!]!
-
-  # Retrieve all messages by user id
-  getAllMessagesByUserId(user_id: Int!): [Message!]!
 }
 
 # Mutation object
@@ -52,11 +47,11 @@ type Mutation {
   createMessage(messageInput: MessageInput!): Boolean!
 
   # Delete a user by his identifier
-  deleteUser(id: Int!): Boolean!
+  deleteUser(uid: String!): Boolean!
 
   # Delete a message by its identifier
-  deleteMessage(id: Int!): Boolean!
+  deleteMessage(uid: String!): Boolean!
 
   # Update a user by his identifier
-  updateUser(id: Int!, userInput: UserInput!): Boolean!
+  updateUser(uid: String!, userInput: UserInput!): Boolean!
 }
