@@ -1,0 +1,5 @@
+query getAllMessagesByUserId($user_id: Int!) {
+    getAllMessagesByUserId(user_id: $user_id) {
+        message
+    }
+}
