@@ -45,6 +45,7 @@ class UserMessageHistoryActivity : AppCompatActivity() {
             val intent = Intent(this, ChatActivity::class.java)
             intent.putExtra("username", username)
             startActivity(intent)
+            finish()
         }
 
         runBlocking {
@@ -61,6 +62,7 @@ class UserMessageHistoryActivity : AppCompatActivity() {
 
         initRecyclerView()
     }
+
     private fun initRecyclerView() {
         recyclerView = binding.rvMessageHistory
         rvAdapter = RecyclerViewItemAdapter(recyclerViewList)
@@ -68,6 +70,7 @@ class UserMessageHistoryActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@UserMessageHistoryActivity)
             adapter = rvAdapter
         }
+        binding.rvMessageHistory.scrollToPosition(rvAdapter.itemCount - 1)
         Log.d(TAG, "Recycler view initialized")
     }
 
@@ -76,11 +79,11 @@ class UserMessageHistoryActivity : AppCompatActivity() {
         username: String?
     ): MutableList<RecyclerViewItemModel> {
         val messagesListInRVFormat = rawMessages?.map {
-
-            val name = username
-            val content = it.message.substring(name!!.length + 4, it.message.length)
+            val name = "[$username]"
+            val content = it.message.substring(name!!.length + 2, it.message.length)
             RecyclerViewItemModel(name = name, content = content)
         } as MutableList<RecyclerViewItemModel>
+
         Log.d(TAG, "Mapped to RV format")
         return messagesListInRVFormat
     }
