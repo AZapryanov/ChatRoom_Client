@@ -77,12 +77,6 @@ class ChatActivity : AppCompatActivity() {
             finish()
         }
 
-        viewModel.messageCount.observe(this, {
-            rvAdapter.notifyItemInserted(viewModel.recyclerViewList.size - 1)
-//            Log.d(TAG, "View model list: ${viewModel.recyclerViewList}")
-            binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
-        })
-
         WebsocketService.receivedUserId.observe(this, {
             userId = WebsocketService.receivedUserId.value
         })
@@ -90,10 +84,14 @@ class ChatActivity : AppCompatActivity() {
         WebsocketService.receivedRecyclerViewItem.observe(this, {
             if (WebsocketService.receivedRecyclerViewItem.value!!.name != OBSERVER_LOCK) {
                 viewModel.addItemToList(WebsocketService.receivedRecyclerViewItem.value!!)
+                rvAdapter.notifyItemInserted(viewModel.recyclerViewList.size - 1)
+                binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
+                //            Log.d(TAG, "View model list: ${viewModel.recyclerViewList}")
             }
         })
 
         initRecyclerView()
+        binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
         val messageToSend = "%: $username"
         WebsocketService.sendMessage(messageToSend)
     }
