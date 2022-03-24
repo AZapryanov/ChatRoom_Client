@@ -87,6 +87,7 @@ object WebsocketService {
                                     "Message received -> message: $message\nname: $name\ncontent: $content"
                                 )
                                 receivedRecyclerViewItem.value = RecyclerViewItemModel(name, content)
+                                receivedRecyclerViewItem.value = RecyclerViewItemModel(ChatActivity.OBSERVER_LOCK, ChatActivity.OBSERVER_LOCK)
                             }
                         }
                         Log.d(ChatActivity.TAG, "message received: ${frame.readText()}")

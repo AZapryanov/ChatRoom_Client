@@ -22,6 +22,7 @@ import src.main.graphql.MessageListQuery
 class ChatActivity : AppCompatActivity() {
     companion object {
         const val TAG = "ChatActivity"
+        const val OBSERVER_LOCK = "^&$#"
     }
 
     private lateinit var binding: ActivityChatBinding
@@ -76,21 +77,21 @@ class ChatActivity : AppCompatActivity() {
             finish()
         }
 
-        viewModel.messageCount.observe(this, {
-            rvAdapter.notifyItemInserted(viewModel.recyclerViewList.size - 1)
-//            Log.d(TAG, "View model list: ${viewModel.recyclerViewList}")
-            binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
-        }
-
         WebsocketService.receivedUserId.observe(this, {
             userId = WebsocketService.receivedUserId.value
         })
 
         WebsocketService.receivedRecyclerViewItem.observe(this, {
-            viewModel.addItemToList(WebsocketService.receivedRecyclerViewItem.value!!)
+            if (WebsocketService.receivedRecyclerViewItem.value!!.name != OBSERVER_LOCK) {
+                viewModel.addItemToList(WebsocketService.receivedRecyclerViewItem.value!!)
+                rvAdapter.notifyItemInserted(viewModel.recyclerViewList.size - 1)
+                binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
+                //            Log.d(TAG, "View model list: ${viewModel.recyclerViewList}")
+            }
         })
 
         initRecyclerView()
+        binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
         val messageToSend = "%: $username"
         WebsocketService.sendMessage(messageToSend)
     }
