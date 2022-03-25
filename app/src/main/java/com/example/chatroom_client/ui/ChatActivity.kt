@@ -77,18 +77,18 @@ class ChatActivity : AppCompatActivity() {
             finish()
         }
 
-        WebsocketService.receivedUserId.observe(this, {
+        WebsocketService.receivedUserId.observe(this) {
             userId = WebsocketService.receivedUserId.value
-        })
+        }
 
-        WebsocketService.receivedRecyclerViewItem.observe(this, {
+        WebsocketService.receivedRecyclerViewItem.observe(this) {
             if (WebsocketService.receivedRecyclerViewItem.value!!.name != OBSERVER_LOCK) {
                 viewModel.addItemToList(WebsocketService.receivedRecyclerViewItem.value!!)
                 rvAdapter.notifyItemInserted(viewModel.recyclerViewList.size - 1)
                 binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
-                //            Log.d(TAG, "View model list: ${viewModel.recyclerViewList}")
+                // Log.d(TAG, "View model list: ${viewModel.recyclerViewList}")
             }
-        })
+        }
 
         initRecyclerView()
         binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
