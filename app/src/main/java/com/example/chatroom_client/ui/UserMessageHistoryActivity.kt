@@ -38,6 +38,8 @@ class UserMessageHistoryActivity : AppCompatActivity() {
 
         val actionbar = supportActionBar
         actionbar!!.title = ACTIONBAR_TITLE
+        actionbar.setDisplayHomeAsUpEnabled(true)
+
 
         username = intent.getStringExtra(USERNAME_EXTRA_NAME)
         userId = intent.getIntExtra(USER_ID_EXTRA_NAME, 10000)
@@ -89,5 +91,10 @@ class UserMessageHistoryActivity : AppCompatActivity() {
 
         Log.d(TAG, "Mapped to RV format")
         return messagesListInRVFormat
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        finish()
+        return true
     }
 }

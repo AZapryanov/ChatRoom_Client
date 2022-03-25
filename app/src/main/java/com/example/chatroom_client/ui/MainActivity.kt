@@ -13,20 +13,19 @@ class MainActivity : AppCompatActivity() {
         const val USERNAME_EXTRA_NAME = "username"
     }
 
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var mBinding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        val contentView = binding.root
+        mBinding = ActivityMainBinding.inflate(layoutInflater)
+        val contentView = mBinding.root
         setContentView(contentView)
 
         val actionbar = supportActionBar
         actionbar!!.title = ACTIONBAR_TITLE
 
-        binding.buttonJoinChatroom.setOnClickListener {
-            val username = binding.etEnterUsername.text.toString()
-
+        mBinding.buttonJoinChatroom.setOnClickListener {
+            val username = mBinding.etEnterUsername.text.toString()
             val intent = Intent(this, ChatActivity::class.java)
             intent.putExtra(USERNAME_EXTRA_NAME, username)
             startActivity(intent)

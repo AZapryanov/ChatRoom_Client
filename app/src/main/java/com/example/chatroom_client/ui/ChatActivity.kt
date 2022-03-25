@@ -30,22 +30,22 @@ class ChatActivity : AppCompatActivity() {
         const val SEND_USERNAME_TO_SERVER_MESSAGE = "%: "
     }
 
-    private lateinit var binding: ActivityChatBinding
-    private lateinit var viewModel: ChatActivityViewModel
-    private lateinit var rvAdapter: RecyclerViewItemAdapter
-    private lateinit var recyclerView: RecyclerView
+    private lateinit var mBinding: ActivityChatBinding
+    private lateinit var mViewModel: ChatActivityViewModel
+    private lateinit var mRvAdapter: RecyclerViewItemAdapter
+    private lateinit var mRecyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityChatBinding.inflate(layoutInflater)
-        val contentView = binding.root
+        mBinding = ActivityChatBinding.inflate(layoutInflater)
+        val contentView = mBinding.root
         setContentView(contentView)
 
         val actionbar = supportActionBar
         actionbar!!.title = ACTIONBAR_TITLE
 
-        viewModel = ChatActivityViewModel()
-        viewModel.setUsernameValue(intent.getStringExtra(USERNAME_EXTRA_NAME))
+        mViewModel = ChatActivityViewModel()
+        mViewModel.setUsernameValue(intent.getStringExtra(USERNAME_EXTRA_NAME))
 
         if(!WebsocketService.isConnected) {
             WebsocketService.init()
@@ -56,49 +56,49 @@ class ChatActivity : AppCompatActivity() {
             val rawMessages = response.data?.getAllMessages
 
             if (rawMessages != null && rawMessages.isNotEmpty()) {
-                val listOfMessages = viewModel.mapToRecyclerViewFormat(rawMessages, viewModel.getUsernameValue())
-                viewModel.addEntireList(listOfMessages)
+                val listOfMessages = mViewModel.mapToRecyclerViewFormat(rawMessages, mViewModel.getUsernameValue())
+                mViewModel.addEntireList(listOfMessages)
             }
         }
 
-        binding.buttonSendMessage.setOnClickListener {
-            val messageToSend = binding.output.text.toString()
+        mBinding.buttonSendMessage.setOnClickListener {
+            val messageToSend = mBinding.output.text.toString()
             WebsocketService.sendMessage(messageToSend)
-            binding.output.text.clear()
+            mBinding.output.text.clear()
         }
 
-        binding.buttonSeeMyMessageHistory.setOnClickListener {
+        mBinding.buttonSeeMyMessageHistory.setOnClickListener {
             val intent = Intent(this, UserMessageHistoryActivity::class.java)
-            intent.putExtra(USERNAME_EXTRA_NAME, viewModel.getUsernameValue())
-            intent.putExtra(USER_ID_EXTRA_NAME, viewModel.getUserIdValue())
+            intent.putExtra(USERNAME_EXTRA_NAME, mViewModel.getUsernameValue())
+            intent.putExtra(USER_ID_EXTRA_NAME, mViewModel.getUserIdValue())
             startActivity(intent)
             finish()
         }
 
         WebsocketService.receivedUserId.observe(this) {
-            viewModel.setUserIdValue(WebsocketService.receivedUserId.value)
+            mViewModel.setUserIdValue(WebsocketService.receivedUserId.value)
         }
 
         WebsocketService.receivedRecyclerViewItem.observe(this) {
             if (WebsocketService.receivedRecyclerViewItem.value!!.name != OBSERVER_LOCK) {
-                viewModel.addItemToList(WebsocketService.receivedRecyclerViewItem.value!!)
-                rvAdapter.notifyItemInserted(viewModel.recyclerViewList.size - 1)
-                binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
+                mViewModel.addItemToList(WebsocketService.receivedRecyclerViewItem.value!!)
+                mRvAdapter.notifyItemInserted(mViewModel.recyclerViewList.size - 1)
+                mBinding.rvMessages.scrollToPosition(mRvAdapter.itemCount - 1)
             }
         }
 
         initRecyclerView()
-        binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
-        val messageToSend = SEND_USERNAME_TO_SERVER_MESSAGE + "${viewModel.getUsernameValue()}"
+        mBinding.rvMessages.scrollToPosition(mRvAdapter.itemCount - 1)
+        val messageToSend = SEND_USERNAME_TO_SERVER_MESSAGE + "${mViewModel.getUsernameValue()}"
         WebsocketService.sendMessage(messageToSend)
     }
 
     private fun initRecyclerView() {
-        recyclerView = binding.rvMessages
-        rvAdapter = RecyclerViewItemAdapter(viewModel.recyclerViewList)
-        recyclerView.apply {
+        mRecyclerView = mBinding.rvMessages
+        mRvAdapter = RecyclerViewItemAdapter(mViewModel.recyclerViewList)
+        mRecyclerView.apply {
             layoutManager = LinearLayoutManager(this@ChatActivity)
-            adapter = rvAdapter
+            adapter = mRvAdapter
         }
         Log.d(TAG, "Recycler view initialized")
     }
