@@ -14,7 +14,6 @@
         android:usesCleartextTraffic="true">
         <activity
             android:name=".ui.UserMessageHistoryActivity"
-            android:parentActivityName=".ui.ChatActivity"
             android:exported="false" />
         <activity
             android:name=".ui.ChatActivity"

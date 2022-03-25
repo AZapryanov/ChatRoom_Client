@@ -29,7 +29,6 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, ChatActivity::class.java)
             intent.putExtra(USERNAME_EXTRA_NAME, username)
             startActivity(intent)
-            finish()
         }
     }
 }

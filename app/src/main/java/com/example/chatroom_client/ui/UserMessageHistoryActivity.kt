@@ -40,18 +40,9 @@ class UserMessageHistoryActivity : AppCompatActivity() {
         actionbar!!.title = ACTIONBAR_TITLE
         actionbar.setDisplayHomeAsUpEnabled(true)
 
-
         username = intent.getStringExtra(USERNAME_EXTRA_NAME)
         userId = intent.getIntExtra(USER_ID_EXTRA_NAME, 10000)
         recyclerViewList = mutableListOf()
-
-        Log.d(TAG, "$userId")
-        binding.buttonBackToChat.setOnClickListener {
-            val intent = Intent(this, ChatActivity::class.java)
-            intent.putExtra(USERNAME_EXTRA_NAME, username)
-            startActivity(intent)
-            finish()
-        }
 
         runBlocking {
             val response = apolloClient.query(GetAllMessagesByUserIdQuery(userId!!)).execute()
@@ -94,6 +85,9 @@ class UserMessageHistoryActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
+        val intent = Intent(this, ChatActivity::class.java)
+        intent.putExtra(USERNAME_EXTRA_NAME, username)
+        startActivity(intent)
         finish()
         return true
     }
