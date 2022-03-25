@@ -11,11 +11,6 @@ import com.example.chatroom_client.connection.WebsocketService
 import com.example.chatroom_client.data.graphql.apolloClient
 import com.example.chatroom_client.databinding.ActivityChatBinding
 import com.example.chatroom_client.view_model.ChatActivityViewModel
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.features.websocket.*
-import io.ktor.http.*
-import io.ktor.http.cio.websocket.*
 import kotlinx.coroutines.*
 import src.main.graphql.MessageListQuery
 
