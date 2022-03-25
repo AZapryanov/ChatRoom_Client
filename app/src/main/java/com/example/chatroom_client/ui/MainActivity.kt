@@ -8,7 +8,9 @@ import com.example.chatroom_client.databinding.ActivityMainBinding
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        private const val TAG = "ChatActivity"
+        private const val TAG = "MainActivity"
+        const val ACTIONBAR_TITLE = "User registration"
+        const val USERNAME_EXTRA_NAME = "username"
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -20,13 +22,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(contentView)
 
         val actionbar = supportActionBar
-        actionbar!!.title = "User registration"
+        actionbar!!.title = ACTIONBAR_TITLE
 
         binding.buttonJoinChatroom.setOnClickListener {
             val username = binding.etEnterUsername.text.toString()
 
             val intent = Intent(this, ChatActivity::class.java)
-            intent.putExtra("username", username)
+            intent.putExtra(USERNAME_EXTRA_NAME, username)
             startActivity(intent)
             finish()
         }

@@ -17,6 +17,9 @@ class UserMessageHistoryActivity : AppCompatActivity() {
 
     companion object {
         const val TAG = "MessageHistoryActivity"
+        const val ACTIONBAR_TITLE = "My message history"
+        const val USERNAME_EXTRA_NAME = "username"
+        const val USER_ID_EXTRA_NAME = "userId"
     }
 
     private lateinit var binding: ActivityUserMessageHistoryBinding
@@ -34,16 +37,16 @@ class UserMessageHistoryActivity : AppCompatActivity() {
         setContentView(contentView)
 
         val actionbar = supportActionBar
-        actionbar!!.title = "My message history"
+        actionbar!!.title = ACTIONBAR_TITLE
 
-        username = intent.getStringExtra("username")
-        userId = intent.getIntExtra("userId", 10000)
+        username = intent.getStringExtra(USERNAME_EXTRA_NAME)
+        userId = intent.getIntExtra(USER_ID_EXTRA_NAME, 10000)
         recyclerViewList = mutableListOf()
 
         Log.d(TAG, "$userId")
         binding.buttonBackToChat.setOnClickListener {
             val intent = Intent(this, ChatActivity::class.java)
-            intent.putExtra("username", username)
+            intent.putExtra(USERNAME_EXTRA_NAME, username)
             startActivity(intent)
             finish()
         }

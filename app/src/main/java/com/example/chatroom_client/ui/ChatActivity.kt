@@ -20,19 +20,20 @@ import kotlinx.coroutines.*
 import src.main.graphql.MessageListQuery
 
 class ChatActivity : AppCompatActivity() {
+
     companion object {
         const val TAG = "ChatActivity"
+        const val ACTIONBAR_TITLE = "Chatroom"
         const val OBSERVER_LOCK = "^&$#"
+        const val USERNAME_EXTRA_NAME = "username"
+        const val USER_ID_EXTRA_NAME = "userId"
+        const val SEND_USERNAME_TO_SERVER_MESSAGE = "%: "
     }
 
     private lateinit var binding: ActivityChatBinding
     private lateinit var viewModel: ChatActivityViewModel
     private lateinit var rvAdapter: RecyclerViewItemAdapter
     private lateinit var recyclerView: RecyclerView
-    private var client: HttpClient? = null
-
-    var userId: Int? = null
-    var username: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,10 +42,10 @@ class ChatActivity : AppCompatActivity() {
         setContentView(contentView)
 
         val actionbar = supportActionBar
-        actionbar!!.title = "Chatroom"
+        actionbar!!.title = ACTIONBAR_TITLE
 
         viewModel = ChatActivityViewModel()
-        username = intent.getStringExtra("username")
+        viewModel.setUsernameValue(intent.getStringExtra(USERNAME_EXTRA_NAME))
 
         if(!WebsocketService.isConnected) {
             WebsocketService.init()
@@ -53,12 +54,10 @@ class ChatActivity : AppCompatActivity() {
         runBlocking {
             val response = apolloClient.query(MessageListQuery()).execute()
             val rawMessages = response.data?.getAllMessages
-//            Log.d(TAG, "$rawMessages")
 
             if (rawMessages != null && rawMessages.isNotEmpty()) {
-                val listOfMessages = viewModel.mapToRecyclerViewFormat(rawMessages, username)
+                val listOfMessages = viewModel.mapToRecyclerViewFormat(rawMessages, viewModel.getUsernameValue())
                 viewModel.addEntireList(listOfMessages)
-//                Log.d(TAG, "View model list: ${viewModel.recyclerViewList}")
             }
         }
 
@@ -69,16 +68,15 @@ class ChatActivity : AppCompatActivity() {
         }
 
         binding.buttonSeeMyMessageHistory.setOnClickListener {
-            client?.cancel()
             val intent = Intent(this, UserMessageHistoryActivity::class.java)
-            intent.putExtra("username", username)
-            intent.putExtra("userId", userId)
+            intent.putExtra(USERNAME_EXTRA_NAME, viewModel.getUsernameValue())
+            intent.putExtra(USER_ID_EXTRA_NAME, viewModel.getUserIdValue())
             startActivity(intent)
             finish()
         }
 
         WebsocketService.receivedUserId.observe(this) {
-            userId = WebsocketService.receivedUserId.value
+            viewModel.setUserIdValue(WebsocketService.receivedUserId.value)
         }
 
         WebsocketService.receivedRecyclerViewItem.observe(this) {
@@ -86,13 +84,12 @@ class ChatActivity : AppCompatActivity() {
                 viewModel.addItemToList(WebsocketService.receivedRecyclerViewItem.value!!)
                 rvAdapter.notifyItemInserted(viewModel.recyclerViewList.size - 1)
                 binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
-                // Log.d(TAG, "View model list: ${viewModel.recyclerViewList}")
             }
         }
 
         initRecyclerView()
         binding.rvMessages.scrollToPosition(rvAdapter.itemCount - 1)
-        val messageToSend = "%: $username"
+        val messageToSend = SEND_USERNAME_TO_SERVER_MESSAGE + "${viewModel.getUsernameValue()}"
         WebsocketService.sendMessage(messageToSend)
     }
 

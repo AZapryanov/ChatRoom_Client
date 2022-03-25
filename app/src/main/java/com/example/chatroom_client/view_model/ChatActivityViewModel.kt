@@ -10,6 +10,9 @@ import src.main.graphql.MessageListQuery
 class ChatActivityViewModel: ViewModel() {
     var recyclerViewList: MutableList<RecyclerViewItemModel> = mutableListOf()
 
+    private var userId: Int? = null
+    private var username: String? = null
+
     fun addItemToList(itemToAdd: RecyclerViewItemModel) {
         recyclerViewList.add(itemToAdd)
         Log.d(ChatActivity.TAG, "Message added to RV list")
@@ -35,5 +38,21 @@ class ChatActivityViewModel: ViewModel() {
 
         Log.d(ChatActivity.TAG, "Mapped to RV format")
         return messagesListInRVFormat
+    }
+
+    fun setUsernameValue(username: String?) {
+        this.username = username
+    }
+
+    fun setUserIdValue(userId: Int?) {
+        this.userId = userId
+    }
+
+    fun getUsernameValue() : String? {
+        return username
+    }
+
+    fun getUserIdValue() : Int? {
+        return userId
     }
 }
