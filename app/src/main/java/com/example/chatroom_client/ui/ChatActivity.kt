@@ -15,16 +15,6 @@ import kotlinx.coroutines.*
 import src.main.graphql.MessageListQuery
 
 class ChatActivity : AppCompatActivity() {
-
-    companion object {
-        const val TAG = "ChatActivity"
-        const val ACTIONBAR_TITLE = "Chatroom"
-        const val OBSERVER_LOCK = "^&$#"
-        const val USERNAME_EXTRA_NAME = "username"
-        const val USER_ID_EXTRA_NAME = "userId"
-        const val SEND_USERNAME_TO_SERVER_MESSAGE = "%: "
-    }
-
     private lateinit var mBinding: ActivityChatBinding
     private lateinit var mViewModel: ChatActivityViewModel
     private lateinit var mRvAdapter: RecyclerViewItemAdapter
@@ -42,10 +32,12 @@ class ChatActivity : AppCompatActivity() {
         mViewModel = ChatActivityViewModel()
         mViewModel.setUsernameValue(intent.getStringExtra(USERNAME_EXTRA_NAME))
 
-        if(!WebsocketService.isConnected) {
+        if(!WebsocketService.mIsConnected) {
             WebsocketService.init()
         }
 
+        //Each time the activity is launched, a GraphQL query is sent to the server,
+        //to retrieve all messages that have been sent until now and to load them in the RV
         runBlocking {
             val response = apolloClient.query(MessageListQuery()).execute()
             val rawMessages = response.data?.getAllMessages
@@ -70,14 +62,14 @@ class ChatActivity : AppCompatActivity() {
             finish()
         }
 
-        WebsocketService.receivedUserId.observe(this) {
-            mViewModel.setUserIdValue(WebsocketService.receivedUserId.value)
+        WebsocketService.mReceivedUserId.observe(this) {
+            mViewModel.setUserIdValue(WebsocketService.mReceivedUserId.value)
         }
 
-        WebsocketService.receivedRecyclerViewItem.observe(this) {
-            if (WebsocketService.receivedRecyclerViewItem.value!!.name != OBSERVER_LOCK) {
-                mViewModel.addItemToList(WebsocketService.receivedRecyclerViewItem.value!!)
-                mRvAdapter.notifyItemInserted(mViewModel.recyclerViewList.size - 1)
+        WebsocketService.mReceivedRecyclerViewItem.observe(this) {
+            if (WebsocketService.mReceivedRecyclerViewItem.value!!.name != OBSERVER_LOCK) {
+                mViewModel.addItemToList(WebsocketService.mReceivedRecyclerViewItem.value!!)
+                mRvAdapter.notifyItemInserted(mViewModel.mRecyclerViewList.size - 1)
                 mBinding.rvMessages.scrollToPosition(mRvAdapter.itemCount - 1)
             }
         }
@@ -90,11 +82,20 @@ class ChatActivity : AppCompatActivity() {
 
     private fun initRecyclerView() {
         mRecyclerView = mBinding.rvMessages
-        mRvAdapter = RecyclerViewItemAdapter(mViewModel.recyclerViewList)
+        mRvAdapter = RecyclerViewItemAdapter(mViewModel.mRecyclerViewList)
         mRecyclerView.apply {
             layoutManager = LinearLayoutManager(this@ChatActivity)
             adapter = mRvAdapter
         }
         Log.d(TAG, "Recycler view initialized")
+    }
+
+    companion object {
+        const val TAG = "ChatActivity"
+        const val ACTIONBAR_TITLE = "Chatroom"
+        const val OBSERVER_LOCK = "^&$#"
+        const val USERNAME_EXTRA_NAME = "username"
+        const val USER_ID_EXTRA_NAME = "userId"
+        const val SEND_USERNAME_TO_SERVER_MESSAGE = "%: "
     }
 }

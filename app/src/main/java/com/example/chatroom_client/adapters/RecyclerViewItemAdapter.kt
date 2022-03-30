@@ -1,6 +1,5 @@
 package com.example.chatroom_client.adapters
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +12,7 @@ class RecyclerViewItemAdapter(private val items: MutableList<RecyclerViewItemMod
 ) : RecyclerView.Adapter<RecyclerViewItemAdapter.RvEntryViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RvEntryViewHolder {
         var view: View? = null
+
         if (viewType == 0) {
             view = LayoutInflater.from(parent.context).inflate(R.layout.rv_my_messages_template, parent, false)
         } else if (viewType == 1) {

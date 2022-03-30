@@ -14,69 +14,61 @@ import kotlinx.coroutines.runBlocking
 import src.main.graphql.GetAllMessagesByUserIdQuery
 
 class UserMessageHistoryActivity : AppCompatActivity() {
+    private lateinit var mBinding: ActivityUserMessageHistoryBinding
+    private lateinit var mRecyclerViewList: MutableList<RecyclerViewItemModel>
+    private lateinit var mRvAdapter: RecyclerViewItemAdapter
+    private lateinit var mRecyclerView: RecyclerView
 
-    companion object {
-        const val TAG = "MessageHistoryActivity"
-        const val ACTIONBAR_TITLE = "My message history"
-        const val USERNAME_EXTRA_NAME = "username"
-        const val USER_ID_EXTRA_NAME = "userId"
-    }
-
-    private lateinit var binding: ActivityUserMessageHistoryBinding
-    private lateinit var recyclerViewList: MutableList<RecyclerViewItemModel>
-    private lateinit var rvAdapter: RecyclerViewItemAdapter
-    private lateinit var recyclerView: RecyclerView
-
-    private var userId: Int? = null
-    private var username: String? = null
+    private var mUserId: Int? = null
+    private var mUsername: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityUserMessageHistoryBinding.inflate(layoutInflater)
-        val contentView = binding.root
+        mBinding = ActivityUserMessageHistoryBinding.inflate(layoutInflater)
+        val contentView = mBinding.root
         setContentView(contentView)
 
         val actionbar = supportActionBar
         actionbar!!.title = ACTIONBAR_TITLE
         actionbar.setDisplayHomeAsUpEnabled(true)
 
-        username = intent.getStringExtra(USERNAME_EXTRA_NAME)
-        userId = intent.getIntExtra(USER_ID_EXTRA_NAME, 10000)
-        recyclerViewList = mutableListOf()
+        mUsername = intent.getStringExtra(USERNAME_EXTRA_NAME)
+        mUserId = intent.getIntExtra(USER_ID_EXTRA_NAME, 10000)
+        mRecyclerViewList = mutableListOf()
 
+        //Each time the activity is launched, a GraphQL query is sent to the server,
+        //to retrieve all messages that have been sent until now by the current user and to load them in the RV
         runBlocking {
-            val response = apolloClient.query(GetAllMessagesByUserIdQuery(userId!!)).execute()
+            val response = apolloClient.query(GetAllMessagesByUserIdQuery(mUserId!!)).execute()
             val rawMessages = response.data?.getAllMessagesByUserId
             Log.d(TAG, "$rawMessages")
 
             if (rawMessages != null && rawMessages.isNotEmpty()) {
-                val listOfMessages = mapToRecyclerViewFormat(rawMessages, username)
-                recyclerViewList = listOfMessages
-                Log.d(TAG, "View model list: $recyclerViewList")
+                mRecyclerViewList = mapToRecyclerViewFormat(rawMessages, mUsername)
+                Log.d(TAG, "View model list: $mRecyclerViewList")
             }
         }
-
         initRecyclerView()
     }
 
     private fun initRecyclerView() {
-        recyclerView = binding.rvMessageHistory
-        rvAdapter = RecyclerViewItemAdapter(recyclerViewList)
-        recyclerView.apply {
+        mRecyclerView = mBinding.rvMessageHistory
+        mRvAdapter = RecyclerViewItemAdapter(mRecyclerViewList)
+        mRecyclerView.apply {
             layoutManager = LinearLayoutManager(this@UserMessageHistoryActivity)
-            adapter = rvAdapter
+            adapter = mRvAdapter
         }
-        binding.rvMessageHistory.scrollToPosition(rvAdapter.itemCount - 1)
+        mBinding.rvMessageHistory.scrollToPosition(mRvAdapter.itemCount - 1)
         Log.d(TAG, "Recycler view initialized")
     }
 
-    private suspend fun mapToRecyclerViewFormat(
+    private fun mapToRecyclerViewFormat(
         rawMessages: List<GetAllMessagesByUserIdQuery.GetAllMessagesByUserId>?,
         username: String?
     ): MutableList<RecyclerViewItemModel> {
         val messagesListInRVFormat = rawMessages?.map {
             val name = "[$username]"
-            val content = it.message.substring(name!!.length + 2, it.message.length)
+            val content = it.message.substring(name.length + 2, it.message.length)
             RecyclerViewItemModel(name = name, content = content)
         } as MutableList<RecyclerViewItemModel>
 
@@ -86,9 +78,16 @@ class UserMessageHistoryActivity : AppCompatActivity() {
 
     override fun onSupportNavigateUp(): Boolean {
         val intent = Intent(this, ChatActivity::class.java)
-        intent.putExtra(USERNAME_EXTRA_NAME, username)
+        intent.putExtra(USERNAME_EXTRA_NAME, mUsername)
         startActivity(intent)
         finish()
         return true
+    }
+
+    companion object {
+        const val TAG = "MessageHistoryActivity"
+        const val ACTIONBAR_TITLE = "My message history"
+        const val USERNAME_EXTRA_NAME = "username"
+        const val USER_ID_EXTRA_NAME = "userId"
     }
 }

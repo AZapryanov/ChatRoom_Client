@@ -17,31 +17,37 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 object WebsocketService {
+
+    private const val TAG = "WebsocketService"
     private const val HOST_IP = "192.168.182.37"
     private const val PORT = 8080
     private const val PATH = "/chat"
+    private const val RECEIVED_USER_ID_KEY_CHAR = "%"
+    private const val END_OF_USERNAME_KEY_CHAR = ':'
 
-    var isConnected = false
-
-    val receivedUserId: MutableLiveData<Int> by lazy {
+    val mReceivedUserId: MutableLiveData<Int> by lazy {
         MutableLiveData<Int>()
     }
 
-    val receivedRecyclerViewItem: MutableLiveData<RecyclerViewItemModel> by lazy {
+    val mReceivedRecyclerViewItem: MutableLiveData<RecyclerViewItemModel> by lazy {
         MutableLiveData<RecyclerViewItemModel>()
     }
 
-    private var client: HttpClient? = null
-    private var messageToSend = ""
+    var mIsConnected = false
+    private var mClient: HttpClient? = null
+    private var mMessageToSend = ""
 
     fun init() {
+        //It is important that runBlocking is used here, because sometimes in the ChatActivity
+        //the Recycler view gets initialized before the websocket client is finished setting up
+        //and this triggers some bugs
         runBlocking {
-            client = HttpClient(CIO) {
+            mClient = HttpClient(CIO) {
                 install(WebSockets)
             }
 
             CoroutineScope(Dispatchers.IO).launch {
-                runWebSocketClient(client!!, HOST_IP, PORT, PATH)
+                runWebSocketClient(mClient!!, HOST_IP, PORT, PATH)
             }
         }
     }
@@ -58,14 +64,14 @@ object WebsocketService {
             port = port, path = path
         ) {
             Log.d(ChatActivity.TAG, "Sucessfully connected!")
-            isConnected = true
+            mIsConnected = true
 
             val sendMessageJob = launch { sendMessage() }
             val receiveMessageJob = launch { listenForIncomingMessages(incoming) }
             receiveMessageJob.join()
             sendMessageJob.join()
         }
-        isConnected = false
+        mIsConnected = false
         httpClient.close()
     }
 
@@ -77,41 +83,47 @@ object WebsocketService {
                     is Frame.Text -> {
                         CoroutineScope(Dispatchers.Main).launch {
                             val message = frame.readText()
-                            if (message.startsWith("%")) {
-                                receivedUserId.value = message.subSequence(2, message.length).toString().toInt()
+
+                            //If the received message starts with this key it means that the server has sent the current user's ID,
+                            //from the database and it needs to be stored - It is used for GraphQL calls
+                            if (message.startsWith(RECEIVED_USER_ID_KEY_CHAR)) {
+                                mReceivedUserId.value = message.subSequence(2, message.length).toString().toInt()
                             } else {
-                                val name = message.substring(0, message.indexOf(':'))
+
+                                //There are two fields in the RV templates, that need to be populated,
+                                //hence each received message has to be divided in two parts
+                                val name = message.substring(0, message.indexOf(END_OF_USERNAME_KEY_CHAR))
                                 val content = message.substring(name.length + 2, message.length)
                                 Log.d(
                                     ChatActivity.TAG,
                                     "Message received -> message: $message\nname: $name\ncontent: $content"
                                 )
-                                receivedRecyclerViewItem.value = RecyclerViewItemModel(name, content)
-                                receivedRecyclerViewItem.value = RecyclerViewItemModel(ChatActivity.OBSERVER_LOCK, ChatActivity.OBSERVER_LOCK)
+                                mReceivedRecyclerViewItem.value = RecyclerViewItemModel(name, content)
+                                mReceivedRecyclerViewItem.value = RecyclerViewItemModel(ChatActivity.OBSERVER_LOCK, ChatActivity.OBSERVER_LOCK)
                             }
                         }
                         Log.d(ChatActivity.TAG, "message received: ${frame.readText()}")
                     }
                 }
             } catch (e: ClosedReceiveChannelException) {
-                //Log.w(TAG, "Failure: ${e.message}")
+                Log.w(TAG, "Failure: ${e.message}")
             } catch (e: Exception) {
-                //Log.w(TAG, "Failure: ${e.message}")
+                Log.w(TAG, "Failure: ${e.message}")
             }
         }
     }
 
     private suspend fun WebSocketSession.sendMessage() {
         while (true) {
-            if (messageToSend.isNotEmpty()) {
-                send(Frame.Text(messageToSend))
-                Log.d(ChatActivity.TAG, "Message sent: $messageToSend")
-                messageToSend = ""
+            if (mMessageToSend.isNotEmpty()) {
+                send(Frame.Text(mMessageToSend))
+                Log.d(ChatActivity.TAG, "Message sent: $mMessageToSend")
+                mMessageToSend = ""
             }
         }
     }
 
     fun sendMessage(message: String) {
-        this.messageToSend = message
+        this.mMessageToSend = message
     }
 }
