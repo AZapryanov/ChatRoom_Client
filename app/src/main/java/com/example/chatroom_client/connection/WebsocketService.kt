@@ -106,9 +106,9 @@ object WebsocketService {
                     }
                 }
             } catch (e: ClosedReceiveChannelException) {
-                Log.w(TAG, "Failure: ${e.message}")
+//                Log.w(TAG, "Failure: ${e.message}")
             } catch (e: Exception) {
-                Log.w(TAG, "Failure: ${e.message}")
+//                Log.w(TAG, "Failure: ${e.message}")
             }
         }
     }
