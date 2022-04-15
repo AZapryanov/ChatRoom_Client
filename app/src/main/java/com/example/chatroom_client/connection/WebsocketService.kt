@@ -19,7 +19,7 @@ import kotlinx.coroutines.runBlocking
 object WebsocketService {
 
     private const val TAG = "WebsocketService"
-    private const val HOST_IP = "192.168.182.37"
+    private const val HOST_IP = "18.185.109.12"
     private const val PORT = 8080
     private const val PATH = "/chat"
     private const val RECEIVED_USER_ID_KEY_CHAR = "%"
